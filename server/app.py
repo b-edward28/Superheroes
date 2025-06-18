@@ -55,6 +55,13 @@ def update_hero(id):
         return make_response({'error': 'Hero not found'}, 404)
 
     data = request.get_json()
+
+    if 'name' in data:
+        try:
+            hero.name = data['name']
+        except ValueError as e:
+            return make_response({'error': str(e)}, 400)
+
     if 'super_name' in data:
         try:
             hero.super_name = data['super_name']
@@ -78,12 +85,12 @@ def update_power(id):
             return make_response({'error': str(e)}, 400)
 
     db.session.commit()
-    return make_response(power.to_dict(rules=('-hero_powers')), 200)
+    return make_response(power.to_dict(rules=('-hero_powers',)), 200)
 
 
 #POST
 @app.route('/hero_powers', methods=['POST'])
-def add_heropower():
+def add_hero_power():
     data = request.get_json()
 
     try:
@@ -94,7 +101,11 @@ def add_heropower():
         if not all([strength, power_id, hero_id]):
             raise ValueError('All fields are required')
         
-        new_hero_power = HeroPower(strength=strength, power_id=power_id, hero_id=hero_id)
+        new_hero_power = HeroPower(
+            strength=strength,
+            power_id=power_id,
+            hero_id=hero_id
+        )
         db.session.add(new_hero_power)
         db.session.commit()
 
