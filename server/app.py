@@ -18,14 +18,14 @@ def index():
 @app.route('/heroes', methods=['GET'])
 def get_heroes():
     heroes = Hero.query.all()
-    heroes_list = [hero.to_dict() for hero in heroes]
+    heroes_list = [hero.to_dict(rules=('-hero-powers',)) for hero in heroes]
 
     return make_response(heroes_list, 200)
 
 @app.route('/powers', methods=['GET'])
 def get_powers():
     powers = Power.query.all()
-    powers_list = [power.to_dict() for power in powers]
+    powers_list = [power.to_dict(rules=('-hero_powers',)) for power in powers]
 
     return make_response(powers_list, 200)
 
@@ -36,17 +36,16 @@ def get_hero(id):
     hero = Hero.query.get(id)
     if not hero:
         return make_response({'error': 'Hero not found'}, 404)
-    hero = hero.to_dict()
-    return make_response(hero.to_dict(), 200)
+    hero_dict = hero.to_dict(rules=('-hero-powers', 'hero_powers.power'))
+    return make_response(hero_dict, 200)
 
 @app.route('/powers/<int:id>', methods=['GET'])
-def get_power(id):
+def get_power_by_id(id):
     power = Power.query.get(id)
     if not power:
         return make_response({'error': 'Power not found'}, 404)
-    power = power.to_dict()
-    return make_response(power.to_dict(), 200)
-
+    power_dict = power.to_dict(rules=('-hero_powers', 'hero_powers.hero'))
+    return make_response(power_dict, 200)
 
 #PATCH
 @app.route('/heroes/<int:id>', methods=['PATCH'])
@@ -63,7 +62,7 @@ def update_hero(id):
             return make_response({'error': str(e)}, 400)
 
     db.session.commit()
-    return make_response(hero.to_dict(), 200)
+    return make_response(hero.to_dict(rules=('-hero-powers',)), 200)
 
 @app.route('/powers/<int:id>', methods=['PATCH'])
 def update_power(id):
@@ -79,7 +78,7 @@ def update_power(id):
             return make_response({'error': str(e)}, 400)
 
     db.session.commit()
-    return make_response(power.to_dict(), 200)
+    return make_response(power.to_dict(rules=('-hero_powers')), 200)
 
 
 #POST

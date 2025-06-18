@@ -1,14 +1,18 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import validates
+from sqlalchemy_serializer import SerializerMixin
+
 
 
 metadata = MetaData()
 
 db = SQLAlchemy(metadata=metadata)
 
-class Hero(db.Model):
+class Hero(db.Model, SerializerMixin):
     __tablename__ = 'heroes'
+
+    serialize_rules = ('-hero_powers.hero',) 
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -17,7 +21,7 @@ class Hero(db.Model):
     hero_powers = db.relationship('HeroPower', back_populates='hero', cascade='all, delete')
 
 
-class Power(db.Model):
+class Power(db.Model, SerializerMixin):
     __tablename__ = 'powers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -32,8 +36,10 @@ class Power(db.Model):
             raise ValueError('Description must be at least 20 characters')
         return value
 
-class HeroPower(db.Model):
+class HeroPower(db.Model, SerializerMixin):
     __tablename__ = 'hero_powers'
+
+    serialize_rules = ('-hero.hero_powers', '-powers.hero_powers')
 
     id = db.Column(db.Integer, primary_key=True)
     strength = db.Column(db.String)
